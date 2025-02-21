@@ -21,6 +21,14 @@
 # RStudio files
 .Rproj.user/
 
+
+data/GTD_2021Jan-June_1222dist.xlsx
+data/District_Geometries_Africa.csv
+data/Annual_SPEI_Africa_1980_2025.csv
+data/ACLED_Africa_Regions.csv
+
+*.csv
+
 # produced vignettes
 vignettes/*.html
 vignettes/*.pdf
