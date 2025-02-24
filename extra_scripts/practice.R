@@ -8,7 +8,7 @@ library(janitor)
 library(readxl)
 
 # load and clean data
-acled_data <- read_csv(here("data", "ACLED_Africa_Regions_1-1-1900--1-30-2025.csv"))
+acled_data <- read_csv(here("data", "ACLED_Africa_Regions.csv"))
 
 drought_data <- read_csv(here("data", "Annual_SPEI_Africa_1980_2025.csv")) |>
   clean_names() |>
@@ -28,7 +28,7 @@ ggplot(mazowe_number_conflicts, aes(x = year, y = number_conflicts)) +
   geom_point()
 
 
-# 48 month plot Murzuq
+# 48 month plot Mazowe
 
 drought_48mo_mazowe <- drought_data |>
   filter(shape_name == "Mazowe") |>
