@@ -63,7 +63,7 @@ ui <- fluidPage(
     mainPanel(
       tabsetPanel(
         tabPanel("Conflict Map", leafletOutput("conflictMap", height = 500)),
-        tabPanel("Data Summary", DTOutput("dataTable"))
+        tabPanel("Data Summary", DTOutput("dataTable")),
         tabPanel("Overview",
                  h3("Project Purpose", style = "color:#005f73;"),
                  p("This Shiny app analyzes patterns of armed conflict and terrorism across Sub-Saharan Africa in relation to climate conditions.", style = "font-size:16px;"),
