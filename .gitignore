@@ -21,6 +21,8 @@
 # RStudio files
 .Rproj.user/
 
+# Geopackage files
+*.gpkg
 
 data/GTD_2021Jan-June_1222dist.xlsx
 data/District_Geometries_Africa.csv

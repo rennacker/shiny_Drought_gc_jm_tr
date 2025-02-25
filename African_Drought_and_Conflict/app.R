@@ -17,7 +17,6 @@
 
 #ACLED_Africa_Regions.csv
 
-
 library(shiny)
 library(here)
 library(tidyverse)
@@ -27,24 +26,23 @@ library(DT)
 library(leaflet)
 library(bslib)
 library(leaflet.extras)
+library(janitor)
+library(sf)
 
 # Load conflict datasets
-## other data that we're not using yet
-### gtd_2021 <- read_xlsx(here("data","GTD_2021Jan-June_1222dist.xlsx"))
-### gtd_full <- read_xlsx(here("data","GTD_0522dist.xlsx"))
+merged_data_sahel <- st_read(here("data", "merged_data_sahel.gpkg"))
+
 acled_raw <- read_csv(here("data","ACLED_Africa_Regions.csv"))
 
-acled=acled_raw |>
+drought_data <- read_csv(here("data", "Annual_SPEI_Africa_1980_2025.csv")) |>
+  clean_names() |>
+  filter(year >= 1997)
+
+acled = acled_raw |>
   mutate(longitude = as.numeric(longitude),
          latitude = as.numeric(latitude)) %>%
   filter(!is.na(longitude), !is.na(latitude)) %>%
-  mutate(event_date = dmy(event_date))  # Converts "24 January 2025" to Date format
-
-#load african district geometries (pulled separately from google earth engine)
-district_geoms <- read_csv(here("data","District_Geometries_Africa.csv"))
-
-#load mean SPEIs (pulled separately from google earth engine)
-spei_data <- read_csv(here("data","Annual_SPEI_Africa_1980_2025.csv"))
+  mutate(event_date = dmy(event_date))
 
 # Define UI
 ui <- fluidPage(
@@ -57,26 +55,19 @@ ui <- fluidPage(
     sidebarPanel(
       selectInput("country", "Select Country:", choices = NULL),
       sliderInput("year", "Select Year:", min = 1980, max = 2025, value = c(1980, 2025), sep = ""),
-      selectInput("event_type", "Select Event Type:", choices = NULL, multiple = TRUE),
+      selectInput("event_type", "Select Event Type:", choices = NULL, multiple = TRUE, selected = "Battles"),
+      selectInput("spei_48_category", "SPEI Drought Threshold:", choices = NULL, multiple = TRUE),
+      selectInput("time_lag", "4 Year Drought Lag:", choices = NULL),
       actionButton("update", "Update Data", class = "btn-primary")
     ),
     mainPanel(
       tabsetPanel(
         tabPanel("Conflict Map", leafletOutput("conflictMap", height = 500)),
         tabPanel("Data Summary", DTOutput("dataTable")),
-        tabPanel("Overview",
-                 h3("Project Purpose", style = "color:#005f73;"),
-                 p("This Shiny app analyzes patterns of armed conflict and terrorism across Sub-Saharan Africa in relation to climate conditions.", style = "font-size:16px;"),
-                 img(src = "example_image.jpg", height = "300px")),
-        tabPanel("Conflict Map",
-                 leafletOutput("conflictMap", height = 500)),
-        tabPanel("Data Summary",
-                 DTOutput("dataTable")),
-        tabPanel("Climate Trends",
-                 plotOutput("climatePlot")),
-        tabPanel("Advanced Analysis",
-                 plotOutput("analysisPlot"),
-                 p("This section applies an advanced data analysis technique to uncover patterns in the data."))
+        tabPanel("Climate Trends", plotOutput("climatePlot")),
+        tabPanel("Conflict Trends",
+                 plotOutput("conflictTrendsPlot"),
+                 p("This plot shows the number of conflicts per year in relation to drought periods."))
       )
     )
   )
@@ -84,17 +75,29 @@ ui <- fluidPage(
 
 # Define Server
 server <- function(input, output, session) {
-  # Populate country dropdown dynamically
   observe({
-    updateSelectInput(session, "country", choices = sort(unique(acled$country)))
+    updateSelectInput(session, "country", 
+                      choices = sort(unique(merged_data_sahel$country)))
   })
   
-  # Populate event type dropdown dynamically
   observe({
-    updateSelectInput(session, "event_type", choices = unique(acled$event_type))
+    updateSelectInput(session, "event_type", 
+                      choices = unique(acled$event_type),
+                      selected = "Battles")
   })
   
-  # Reactive dataset based on user inputs
+  observe({
+    updateSelectInput(session, "spei_48_category", 
+                      choices = c("Moderately Dry", "Very Dry", "Extremely Dry"),
+                      selected = "Very Dry")
+  })
+  
+  observe({
+    updateSelectInput(session, "time_lag",
+                      choices = c("TRUE", "FALSE"),
+                      selected = "FALSE")
+  })
+  
   filtered_data <- reactive({
     req(input$country)
     acled %>%
@@ -104,31 +107,6 @@ server <- function(input, output, session) {
              event_type %in% input$event_type)
   })
   
-  # Fetch and render SPEI data
-  spei_data <- reactive({
-    req(input$country, input$year)
-    country_geom <- ee$FeatureCollection("FAO/GAUL/2015/level0")$
-      filter(ee$Filter$eq("ADM0_NAME", input$country))
-    get_spei_data(country_geom, paste0(input$year[1], "-01-01"), paste0(input$year[2], "-12-31"))
-  })
-  
-  output$climatePlot <- renderPlot({
-    spei_values <- spei_data()
-    if (is.null(spei_values)) return(NULL)
-    
-    df <- tibble(
-      Year = seq(input$year[1], input$year[2]),
-      SPEI = rep(spei_values[[1]], length.out = length(seq(input$year[1], input$year[2])))
-    )
-    
-    ggplot(df, aes(x = Year, y = SPEI)) +
-      geom_line(color = "#005f73", size = 1) +
-      labs(title = "SPEI Climate Trends", x = "Year", y = "SPEI Index") +
-      theme_minimal()
-  })
-  
-  
-  # Render Leaflet map
   output$conflictMap <- renderLeaflet({
     req(nrow(filtered_data()) > 0)
     
@@ -152,22 +130,115 @@ server <- function(input, output, session) {
       )
   })
   
-  # Render data table
   output$dataTable <- renderDT({
     datatable(filtered_data(), options = list(pageLength = 10, autoWidth = TRUE))
   })
   
-  # Render Advanced Analysis plot
-  output$analysisPlot <- renderPlot({
-    ggplot(filtered_data(), aes(x = longitude, y = latitude, color = event_type)) +
-      geom_point(alpha = 0.7) +
-      labs(title = "Spatial Distribution of Conflict Events", x = "Longitude", y = "Latitude") +
+  output$climatePlot <- renderPlot({
+    spei_values <- merged_data_sahel %>% filter(country == input$country, year >= input$year[1], year <= input$year[2])
+    ggplot(spei_values, aes(x = year, y = spei_48_month)) +
+      geom_line(color = "#005f73", size = 1) +
+      labs(title = "SPEI Climate Trends", x = "Year", y = "SPEI Index") +
       theme_minimal()
   })
+  
+  output$conflictTrendsPlot <- renderPlot({
+    req(input$country)
+    
+    # Define threshold values
+    drought_thresholds <- c(
+      "Moderately Dry" = -1,
+      "Very Dry" = -1.5,
+      "Extremely Dry" = -2
+    )
+    
+    # If time lag is enabled, start of drought period is 4 years earlier
+    lag_true_false <- ifelse(input$time_lag == "TRUE", 4, 0)
+    
+    # Prepare data for next steps
+    conflict_drought <- merged_data_sahel |>
+      filter(country == input$country) |> # Filter for selected country
+      select(year, country, shape_name, conflict_events, conflict_events_original, spei_48_month, spei_48_category) |>
+      group_by(year) |>
+      mutate(total_conflict_events = sum(conflict_events_original, na.rm = TRUE)) |> # Sum number of conflicts in each year
+      ungroup()
+    
+    # Create drought period data frames manually for each threshold
+    drought_moderate <- conflict_drought %>%
+      filter(spei_48_month < -1) %>%
+      arrange(year) %>%
+      mutate(group = cumsum(c(1, diff(year) > 1))) %>%
+      group_by(group) %>%
+      summarise(start = min(year) - lag_true_false, end = max(year), .groups = "drop") %>%
+      mutate(new_group = cumsum(lag(end, default = first(end)) < start)) %>%
+      group_by(new_group) %>%
+      summarise(start = min(start), end = max(end), .groups = "drop") |>
+      mutate(category = "Moderately Dry")
+    
+    drought_very <- conflict_drought %>%
+      filter(spei_48_month < -1.5) %>%
+      arrange(year) %>%
+      mutate(group = cumsum(c(1, diff(year) > 1))) %>%
+      group_by(group) %>%
+      summarise(start = min(year) - lag_true_false, end = max(year), .groups = "drop") %>%
+      mutate(new_group = cumsum(lag(end, default = first(end)) < start)) %>%
+      group_by(new_group) %>%
+      summarise(start = min(start), end = max(end), .groups = "drop") |>
+      mutate(category = "Very Dry")
+    
+    drought_extreme <- conflict_drought %>%
+      filter(spei_48_month < -2) %>%
+      arrange(year) %>%
+      mutate(group = cumsum(c(1, diff(year) > 1))) %>%
+      group_by(group) %>%
+      summarise(start = min(year) - lag_true_false, end = max(year), .groups = "drop") %>%
+      mutate(new_group = cumsum(lag(end, default = first(end)) < start)) %>%
+      group_by(new_group) %>%
+      summarise(start = min(start), end = max(end), .groups = "drop") |>
+      mutate(category = "Extremely Dry")
+    
+    # Combine selected thresholds based on user input
+    if (length(input$spei_48_category) == 0) {
+      drought_periods <- tibble(start = numeric(0), end = numeric(0), category = character(0))
+    } else {
+      # Combine selected thresholds based on user input
+      drought_periods <- bind_rows(
+        if ("Moderately Dry" %in% input$spei_48_category) drought_moderate else NULL,
+        if ("Very Dry" %in% input$spei_48_category) drought_very else NULL,
+        if ("Extremely Dry" %in% input$spei_48_category) drought_extreme else NULL
+      )
+    }
+    
+    # Assign colors to different drought levels
+    drought_colors <- c(
+      "Moderately Dry" = "orange",
+      "Very Dry" = "tomato",
+      "Extremely Dry" = "darkred"
+    )
+    
+    # Plot conflict trends with multiple drought layers
+    ggplot(conflict_drought, aes(x = year, y = total_conflict_events)) +
+      geom_line() +
+      geom_point() +
+      geom_rect(data = drought_periods, 
+                aes(xmin = start, xmax = end, ymin = -Inf, ymax = Inf, fill = category),
+                alpha = 0.3, inherit.aes = FALSE) +
+      scale_fill_manual(values = drought_colors) +
+      geom_vline(data = drought_periods %>% filter(start == end), 
+                 aes(xintercept = start, color = category),
+                 alpha = 0.3, linewidth = 1) +
+      scale_color_manual(values = drought_colors) +
+      labs(title = "Conflict Trends and Drought Periods",
+           x = "Year",
+           y = "Number of Conflicts",
+           fill = "Drought Severity") +
+      theme_minimal()
+  })
+  
 }
 
-# Run App
 shinyApp(ui, server)
+
 
 
 ###########################
