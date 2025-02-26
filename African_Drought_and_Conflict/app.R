@@ -34,10 +34,6 @@ merged_data_sahel <- st_read(here("data", "merged_data_sahel.gpkg"))
 
 acled_raw <- read_csv(here("data","ACLED_Africa_Regions.csv"))
 
-drought_data <- read_csv(here("data", "Annual_SPEI_Africa_1980_2025.csv")) |>
-  clean_names() |>
-  filter(year >= 1997)
-
 acled = acled_raw |>
   mutate(longitude = as.numeric(longitude),
          latitude = as.numeric(latitude)) %>%
@@ -53,7 +49,7 @@ ui <- fluidPage(
   titlePanel(div(style = "color:#005f73; font-size: 24px;", "Sub-Saharan Africa Conflict & Climate Analysis")),
   sidebarLayout(
     sidebarPanel(
-      selectInput("country", "Select Country:", choices = NULL),
+      selectInput("country", "Select Country:", choices = NULL, multiple = TRUE, selected = "Burkina Faso"),
       sliderInput("year", "Select Year:", min = 1980, max = 2025, value = c(1980, 2025), sep = ""),
       selectInput("event_type", "Select Event Type:", choices = NULL, multiple = TRUE, selected = "Battles"),
       selectInput("spei_48_category", "SPEI Drought Threshold:", choices = NULL, multiple = TRUE),
@@ -62,6 +58,10 @@ ui <- fluidPage(
     ),
     mainPanel(
       tabsetPanel(
+        tabPanel("Overview",
+                 h3("Overview"),
+                 p("This dashboard provides insights into conflict occurrences and their relationship with climate trends. 
+                Explore the interactive map, data summary, and visualizations to understand patterns and correlations.")),
         tabPanel("Conflict Map", leafletOutput("conflictMap", height = 500)),
         tabPanel("Data Summary", DTOutput("dataTable")),
         tabPanel("Climate Trends", plotOutput("climatePlot")),
@@ -103,26 +103,52 @@ server <- function(input, output, session) {
     acled %>%
       filter(year(event_date) >= input$year[1],
              year(event_date) <= input$year[2],
-             country == input$country,
+             country %in% input$country,  # Allow multiple country selection
              event_type %in% input$event_type)
   })
   
   output$conflictMap <- renderLeaflet({
     req(nrow(filtered_data()) > 0)
     
-    leaflet(filtered_data()) %>%
+    # Define custom icons for each event type
+    event_icons <- awesomeIconList(
+      Battles = makeAwesomeIcon(icon = "crosshairs", markerColor = "red", library = "fa"),
+      Protests = makeAwesomeIcon(icon = "users", markerColor = "blue", library = "fa"),
+      Riots = makeAwesomeIcon(icon = "bolt", markerColor = "orange", library = "fa"),
+      Violence_against_civilians = makeAwesomeIcon(icon = "exclamation-triangle", markerColor = "darkred", library = "fa"),
+      Explosions_Remote_violence = makeAwesomeIcon(icon = "bomb", markerColor = "lightgray", library = "fa"),
+      Strategic_Developments = makeAwesomeIcon(icon = "flag", markerColor = "green", library = "fa")  # New icon
+    )
+    
+    # Create a safe mapping function for event types
+    event_type_map <- function(event) {
+      case_when(
+        event == "Violence against civilians" ~ "Violence_against_civilians",
+        event == "Explosions/Remote violence" ~ "Explosions_Remote_violence",
+        event == "Strategic developments" ~ "Strategic_Developments",
+        TRUE ~ event  # Keep original name for single-word types
+      )
+    }
+    
+    # Apply mapping *before* filtering to avoid missing values
+    filtered_data_mod <- filtered_data() %>%
+      mutate(event_type_safe = event_type_map(event_type)) %>%
+      filter(event_type_safe %in% event_type_map(input$event_type))  # Ensure filtering is correct
+    
+    leaflet(filtered_data_mod) %>%
       addTiles() %>%
-      addMarkers(
+      addAwesomeMarkers(
         lng = ~longitude, lat = ~latitude,
+        icon = ~event_icons[event_type_safe],  # Use mapped safe event type
         clusterOptions = markerClusterOptions(
-          spiderfyOnMaxZoom = TRUE,  # Enables spiderfying
+          spiderfyOnMaxZoom = TRUE,  
           showCoverageOnHover = FALSE,
           zoomToBoundsOnClick = TRUE,
           removeOutsideVisibleBounds = TRUE
         ),
         popup = ~paste0(
           "<b>Event Type:</b> ", event_type, "<br>",
-          "<b>Event Date:</b> ", event_date,"<br>",
+          "<b>Event Date:</b> ", event_date, "<br>",
           "<b>Actor:</b> ", actor1, "<br>",
           "<b>Fatalities:</b> ", fatalities, "<br>",
           "<b>Notes:</b> ", notes
