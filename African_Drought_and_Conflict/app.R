@@ -1,13 +1,3 @@
-# Protocol communicate about work being done then
-# Don't forget to pull at the beginning of a session and make sure you're working on the main branch.
-# Then when you are done working and want to sink up you, "Commit, Pull and resolve any issues, then push"
-
-# Shouldn't matter but just in case...
-# For consistency lets name each file (in our own data file and in the code)
-# As follows:
-#### ACLED_Africa_Regions.csv
-#### merged_data_sahel.gpkg
-
 library(shiny)
 library(here)
 library(tidyverse)
@@ -20,6 +10,7 @@ library(leaflet.extras)
 library(janitor)
 library(sf)
 library(scales)
+library(rnaturalearth)
 
 # Load conflict datasets
 merged_data_sahel <- st_read(here("data", "merged_data_sahel.gpkg"))
@@ -29,6 +20,9 @@ acled = acled_raw |>
          latitude = as.numeric(latitude)) %>%
   filter(!is.na(longitude), !is.na(latitude)) %>%
   mutate(event_date = dmy(event_date))
+
+# Get Africa country boundaries for the small map
+africa_countries <- ne_countries(scale = "medium", continent = "Africa", returnclass = "sf")
 
 # Define UI
 ui <- navbarPage(
@@ -92,10 +86,12 @@ ui <- navbarPage(
                            selected = "Burkina Faso"),
                selectInput("event_type", "Select Event Types:", choices = unique(acled$event_type),
                            multiple = TRUE,
-                           selected = "Battles"),
+                           selected = c("Battles", "Riots", "Protests", "Violence against civilians", "Explosions/Remote violence", "Strategic developments")),
                sliderInput("year", "Select Year Range:", min = 1980, max = 2023, value = c(1980, 2023), sep = ""),
-               numericInput("fatal_min", "Minimum Fatalities", min = 0, max = 1000, value = 0),
-               numericInput("fatal_max", "Maximum Fatalities", min = 0, max = 1000, value = 1000)
+               # Slider for selecting range of fatalities
+               sliderInput("fatalities", "Select Fatality Range:",
+                           min = 0, max = 5000, 
+                           value = c(0, 5000), step = 10)
              ),
              mainPanel(
                leafletOutput("conflictMap")
@@ -117,10 +113,18 @@ ui <- navbarPage(
                            selected = "TRUE")
              ),
              mainPanel(
-               plotOutput("conflictTrendPlot")
+               fluidRow(
+                 column(9, 
+                        div(style = "padding-right: 0px;", # Reduce right padding
+                            plotOutput("conflictTrendPlot"))
+                 ),
+                 column(3, 
+                        div(style = "height: 200px; padding-left: 0px;", # Reduce left padding
+                            plotOutput("africaLocationMap", height = "100%", width = "100%"))
+                 )
              )
            )
-  ),
+  )),
   
   tabPanel("Climate Trends",
            sidebarLayout(
@@ -138,6 +142,7 @@ ui <- navbarPage(
 )
 
 
+
 # Define Server
 server <- function(input, output, session) {
   filtered_data <- reactive({
@@ -145,16 +150,12 @@ server <- function(input, output, session) {
     acled %>%
       filter(year(event_date) >= input$year[1],
              year(event_date) <= input$year[2],
-             fatalities >= input$fatal_min,
-             fatalities <= input$fatal_max,
+             fatalities >= input$fatalities[1], fatalities <= input$fatalities[2],
              country %in% input$country_map,  # Allow multiple country selection
              event_type %in% input$event_type)
   })
   
   output$conflictMap <- renderLeaflet({
-    
-    
-    
     # Define custom icons for each event type
     event_icons <- awesomeIconList(
       Battles = makeAwesomeIcon(icon = "crosshairs", markerColor = "red", library = "fa"),
@@ -193,8 +194,9 @@ server <- function(input, output, session) {
           removeOutsideVisibleBounds = TRUE
         ),
         popup = ~paste0(
-          "<b>Event Type:</b> ", event_type, "<br>",
           "<b>Event Date:</b> ", event_date, "<br>",
+          "<b>Event Type:</b> ", event_type, "<br>",
+          "<b>Event Sub-Type:</b> ", sub_event_type, "<br>",
           "<b>Actor:</b> ", actor1, "<br>",
           "<b>Fatalities:</b> ", fatalities, "<br>",
           "<b>Notes:</b> ", notes
@@ -202,6 +204,31 @@ server <- function(input, output, session) {
       )
     
   })
+  
+  # New output for fully responsive Africa map
+output$africaLocationMap <- renderPlot({
+  req(input$country_con)
+  
+  # Create a small map of Africa with the selected country highlighted
+  africa_map <- ggplot() +
+    geom_sf(data = africa_countries, fill = "lightgray", color = "white", size = 0.2) +
+    geom_sf(data = africa_countries %>% 
+              filter(name == input$country_con | 
+                       # Handle potential name discrepancies between datasets
+                       tolower(name) == tolower(input$country_con) |
+                       admin == input$country_con),
+            fill = "black", color = "white") +
+    # Make plot more compact by setting aspect ratio and expanding limits
+    coord_sf(expand = FALSE) +
+    theme_void() +  # Minimal theme with no axes, labels, or grid
+    theme(
+      panel.background = element_rect(fill = "#f4f4f4", color = NA),
+      plot.background = element_rect(fill = "#f4f4f4", color = NA),
+      plot.margin = margin(0, 0, 0, 0)  # Remove all margins
+    )
+  
+  return(africa_map)
+}, bg = "#f4f4f4")
   
   output$dataTable <- renderDT({
     datatable(filtered_data(), options = list(pageLength = 10, autoWidth = TRUE))
@@ -359,7 +386,3 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server)
-
-
-
-###########################
