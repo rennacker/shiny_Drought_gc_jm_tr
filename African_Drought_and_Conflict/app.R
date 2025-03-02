@@ -31,6 +31,29 @@ ui <- navbarPage(
     bg = "#f4f4f4", fg = "#222222", primary = "#005f73",
     base_font = font_google("Lato"), heading_font = font_google("Merriweather")
   ),
+  header = tags$head(
+    tags$style(HTML("
+    .navbar {
+      background: url('background.jpg') no-repeat center center;
+      background-size: cover;
+      height: 120px;
+      position: relative;
+    }
+    
+    .navbar:before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5); /* Dark overlay (adjust opacity as needed) */
+    }
+
+    .navbar .navbar-brand, .navbar-nav > li > a {
+      color: white !important; /* Make text white */
+      position: relative; /* Ensure text is above overlay */
+      z-index: 1;
+    }
+  "))
+  ),
   tabPanel("Overview",
            sidebarLayout(
              sidebarPanel(
