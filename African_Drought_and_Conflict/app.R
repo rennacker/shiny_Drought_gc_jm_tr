@@ -128,14 +128,14 @@ ui <- navbarPage(
   tabPanel("Conflict Map",
            sidebarLayout(
              sidebarPanel(
-               selectInput("country_map", "Select Country:", 
+               selectInput("country_map", "Select Countries:", 
                            choices = sort(unique(merged_data_sahel$country)),
                            multiple = TRUE,
                            selected = "Burkina Faso"),
                selectInput("event_type", "Select Event Types:", choices = unique(acled$event_type),
                            multiple = TRUE,
                            selected = c("Battles", "Riots", "Protests", "Violence against civilians", "Explosions/Remote violence", "Strategic developments")),
-               sliderInput("year", "Select Year Range:", min = 1980, max = 2023, value = c(1980, 2023), sep = ""),
+               sliderInput("year", "Select Year Range:", min = 1997, max = 2023, value = c(1997, 2023), sep = ""),
                # Slider for selecting range of fatalities
                sliderInput("fatalities", "Select Fatality Range:",
                            min = 0, max = 5000, 
