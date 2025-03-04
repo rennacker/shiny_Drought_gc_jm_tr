@@ -144,10 +144,11 @@ ui <- navbarPage(
                  column(3, 
                         div(style = "height: 200px; padding-left: 0px;", # Reduce left padding
                             plotOutput("africaLocationMap", height = "100%", width = "100%"))
-                 )
-             )
+                )
+              )
+            )
            )
-  )),
+         ),
   
   tabPanel("Climate Trends",
            sidebarLayout(
@@ -158,7 +159,16 @@ ui <- navbarPage(
                sliderInput("year", "Select Year Range:", min = 1980, max = 2023, value = c(1980, 2023), sep = "")
              ),
              mainPanel(
-               plotOutput("climatePlot")
+               fluidRow(
+                 column(9, 
+                        div(style = "padding-right: 0px;", # Reduce right padding
+                            plotOutput("climatePlot"))
+                 ),
+                 column(3, 
+                        div(style = "height: 200px; padding-left: 0px;", # Reduce left padding
+                            plotOutput("africaLMap", height = "100%", width = "100%"))
+                 )
+               )
              )
            )
   )
@@ -228,30 +238,31 @@ server <- function(input, output, session) {
     
   })
   
-  # New output for fully responsive Africa map
-output$africaLocationMap <- renderPlot({
-  req(input$country_con)
+  # New output for fully responsive Africa map for climate trends NOTE: "input$country_cc" for CLIMATE TRENDS
+  output$africaLMap <- renderPlot({
+    req(input$country_cc)
+    
+    # Create a small map of Africa with the selected country highlighted
+    africa_map <- ggplot() +
+      geom_sf(data = africa_countries, fill = "lightgray", color = "white", size = 0.2) +
+      geom_sf(data = africa_countries %>% 
+                filter(name == input$country_cc | 
+                         # Handle potential name discrepancies between datasets
+                         tolower(name) == tolower(input$country_cc) |
+                         admin == input$country_cc),
+              fill = "black", color = "white") +
+      # Make plot more compact by setting aspect ratio and expanding limits
+      coord_sf(expand = FALSE) +
+      theme_void() +  # Minimal theme with no axes, labels, or grid
+      theme(
+        panel.background = element_rect(fill = "#f4f4f4", color = NA),
+        plot.background = element_rect(fill = "#f4f4f4", color = NA),
+        plot.margin = margin(0, 0, 0, 0)  # Remove all margins
+      )
+    
+    return(africa_map)
+  }, bg = "#f4f4f4")
   
-  # Create a small map of Africa with the selected country highlighted
-  africa_map <- ggplot() +
-    geom_sf(data = africa_countries, fill = "lightgray", color = "white", size = 0.2) +
-    geom_sf(data = africa_countries %>% 
-              filter(name == input$country_con | 
-                       # Handle potential name discrepancies between datasets
-                       tolower(name) == tolower(input$country_con) |
-                       admin == input$country_con),
-            fill = "black", color = "white") +
-    # Make plot more compact by setting aspect ratio and expanding limits
-    coord_sf(expand = FALSE) +
-    theme_void() +  # Minimal theme with no axes, labels, or grid
-    theme(
-      panel.background = element_rect(fill = "#f4f4f4", color = NA),
-      plot.background = element_rect(fill = "#f4f4f4", color = NA),
-      plot.margin = margin(0, 0, 0, 0)  # Remove all margins
-    )
-  
-  return(africa_map)
-}, bg = "#f4f4f4")
   
   output$dataTable <- renderDT({
     datatable(filtered_data(), options = list(pageLength = 10, autoWidth = TRUE))
@@ -276,6 +287,32 @@ output$africaLocationMap <- renderPlot({
            y = "Annual Mean 48-month SPEI") +
       theme_minimal()
   })
+  
+  # New output for fully responsive Africa map for conflict trends NOTE "input$country_con" for CONFLICT TRENDS
+  output$africaLocationMap <- renderPlot({
+    req(input$country_con)
+    
+    # Create a small map of Africa with the selected country highlighted
+    africa_map <- ggplot() +
+      geom_sf(data = africa_countries, fill = "lightgray", color = "white", size = 0.2) +
+      geom_sf(data = africa_countries %>% 
+                filter(name == input$country_con | 
+                         # Handle potential name discrepancies between datasets
+                         tolower(name) == tolower(input$country_con) |
+                         admin == input$country_con),
+              fill = "black", color = "white") +
+      # Make plot more compact by setting aspect ratio and expanding limits
+      coord_sf(expand = FALSE) +
+      theme_void() +  # Minimal theme with no axes, labels, or grid
+      theme(
+        panel.background = element_rect(fill = "#f4f4f4", color = NA),
+        plot.background = element_rect(fill = "#f4f4f4", color = NA),
+        plot.margin = margin(0, 0, 0, 0)  # Remove all margins
+      )
+    
+    return(africa_map)
+  }, bg = "#f4f4f4")
+  
   
   output$conflictTrendPlot <- renderPlot({
     req(input$country_con)

@@ -10,6 +10,17 @@ library(rnaturalearthdata)
 # Assuming merged_data_sahel is pre-loaded and contains necessary columns (e.g., country, year, spei_48_month)
 # merged_data_sahel <- st_read("path_to_your_data.gpkg")  # If not pre-loaded
 
+
+# Load conflict datasets
+merged_data_sahel <- st_read(here("data", "merged_data_sahel.gpkg"))
+acled_raw <- read_csv(here("data","ACLED_Africa_Regions.csv"))
+acled = acled_raw |>
+  mutate(longitude = as.numeric(longitude),
+         latitude = as.numeric(latitude)) %>%
+  filter(!is.na(longitude), !is.na(latitude)) %>%
+  mutate(event_date = dmy(event_date))
+
+
 # Define UI
 ui <- navbarPage("Conflict & Climate Dashboard",
                  
