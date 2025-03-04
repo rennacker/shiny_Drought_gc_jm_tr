@@ -29,7 +29,9 @@ ui <- navbarPage(
   "Sahelian Conflict & Climate Dashboard",
   theme = bs_theme(
     bg = "#f4f4f4", fg = "#222222", primary = "#005f73",
-    base_font = font_google("Lato"), heading_font = font_google("Merriweather")
+    base_font = font_google("Lato"), 
+    heading_font = font_google("Merriweather"),
+    version = 5  # Use Bootstrap 5 for better responsiveness
   ),
   header = tags$head(
     tags$style(HTML("
@@ -44,15 +46,38 @@ ui <- navbarPage(
       content: '';
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.5); /* Dark overlay (adjust opacity as needed) */
+      background: rgba(0, 0, 0, 0.5);
     }
 
     .navbar .navbar-brand, .navbar-nav > li > a {
-      color: white !important; /* Make text white */
-      position: relative; /* Ensure text is above overlay */
+      color: white !important;
+      position: relative;
       z-index: 1;
     }
-  "))
+
+    /* Ensure tabs are always visible */
+    .navbar-nav {
+      flex-direction: row !important;
+      flex-wrap: nowrap;
+    }
+    
+    /* Optional: Adjust tab spacing if needed */
+    .navbar-nav .nav-item {
+      margin-right: 15px;
+    }
+  ")),
+    # Add viewport meta tag for better mobile responsiveness
+    tags$meta(name = "viewport", content = "width=device-width, initial-scale=1"),
+    
+    # JavaScript to set initial window size
+    tags$script("
+      // Attempt to resize window on load
+      window.onload = function() {
+        if (window.outerWidth < 1200) {
+          window.resizeTo(1200, window.outerHeight);
+        }
+      }
+    ")
   ),
   tabPanel("Overview",
            sidebarLayout(
