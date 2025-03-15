@@ -100,8 +100,7 @@ ui <- navbarPage(
                    a("https://doi.org/10.1371/journal.pone.0231866", href = "https://doi.org/10.1371/journal.pone.0231866", target = "_blank"),
                    ".", style = "word-wrap: break-word; white-space: normal;"
                  )
-               ),
-               br()
+               )
              ),
              mainPanel(
                h3("Welcome to the Sahelian Conflict & Drought Dashboard"),
@@ -123,8 +122,7 @@ ui <- navbarPage(
                )
              )
            )
-  )
-  ,
+  ),
   tabPanel("Conflict Map",
            sidebarLayout(
              sidebarPanel(
@@ -139,8 +137,26 @@ ui <- navbarPage(
                # Slider for selecting range of fatalities
                sliderInput("fatalities", "Select Fatality Range:",
                            min = 0, max = 5000, 
-                           value = c(0, 5000), step = 10)
+                           value = c(0, 5000), step = 10),
+               
+               # Add a divider
+               tags$hr(),
+               
+               # Keeping the existing "About This Analysis" section as it already has the format you like
+               tags$div(
+                 style = "margin-top: 15px;",
+                 tags$h4("About This Analysis"),
+                 tags$p("This application examines the relationship between drought conditions, measured by the Standardized Precipitation Evapotranspiration Index (SPEI), and conflict events in Sahel countries."),
+                 tags$p("SPEI timescales represent drought conditions over different time periods:"),
+                 tags$ul(
+                   tags$li("1 Month: Short-term drought conditions"),
+                   tags$li("12 Months: Medium-term drought conditions"),
+                   tags$li("24/48 Months: Long-term drought conditions")
+                 ),
+                 tags$p("The statistical model uses Poisson regression (fepois) to analyze how drought severity correlates with conflict frequency while controlling for population.")
+               )
              ),
+             
              mainPanel(
                leafletOutput("conflictMap")
              )
@@ -158,7 +174,24 @@ ui <- navbarPage(
                                   selected = c("Moderately Dry", "Very Dry", "Extremely Dry")),
                selectInput("time_lag", "4 Year Drought Lag:", 
                            choices = c("TRUE", "FALSE"),
-                           selected = "TRUE")
+                           selected = "TRUE"),
+               
+               # Add a divider
+               tags$hr(),
+               
+               # Added example text with the same format as "About This Analysis"
+               tags$div(
+                 style = "margin-top: 15px;",
+                 tags$h4("EXAMPLE TEXT"),
+                 tags$p("This application examines the relationship between drought conditions, measured by the Standardized Precipitation Evapotranspiration Index (SPEI), and conflict events in Sahel countries."),
+                 tags$p("SPEI timescales represent drought conditions over different time periods:"),
+                 tags$ul(
+                   tags$li("1 Month: Short-term drought conditions"),
+                   tags$li("12 Months: Medium-term drought conditions"),
+                   tags$li("24/48 Months: Long-term drought conditions")
+                 ),
+                 tags$p("The statistical model uses Poisson regression (fepois) to analyze how drought severity correlates with conflict frequency while controlling for population.")
+               )
              ),
              mainPanel(
                fluidRow(
@@ -169,11 +202,11 @@ ui <- navbarPage(
                  column(3, 
                         div(style = "height: 200px; padding-left: 0px;", # Reduce left padding
                             plotOutput("africaLocationMap", height = "100%", width = "100%"))
-                )
-              )
-            )
+                 )
+               )
+             )
            )
-         ),
+  ),
   
   tabPanel("Climate Trends",
            sidebarLayout(
@@ -181,7 +214,24 @@ ui <- navbarPage(
                selectInput("country_cc", "Select Country:", 
                            choices = sort(unique(merged_data_sahel$country)),
                            selected = "Burkina Faso"),
-               sliderInput("year", "Select Year Range:", min = 1980, max = 2023, value = c(1980, 2023), sep = "")
+               sliderInput("year", "Select Year Range:", min = 1980, max = 2023, value = c(1980, 2023), sep = ""),
+               
+               # Add a divider
+               tags$hr(),
+               
+               # Added example text with the same format as "About This Analysis"
+               tags$div(
+                 style = "margin-top: 15px;",
+                 tags$h4("EXAMPLE TEXT"),
+                 tags$p("This application examines the relationship between drought conditions, measured by the Standardized Precipitation Evapotranspiration Index (SPEI), and conflict events in Sahel countries."),
+                 tags$p("SPEI timescales represent drought conditions over different time periods:"),
+                 tags$ul(
+                   tags$li("1 Month: Short-term drought conditions"),
+                   tags$li("12 Months: Medium-term drought conditions"),
+                   tags$li("24/48 Months: Long-term drought conditions")
+                 ),
+                 tags$p("The statistical model uses Poisson regression (fepois) to analyze how drought severity correlates with conflict frequency while controlling for population.")
+               )
              ),
              mainPanel(
                fluidRow(
@@ -198,8 +248,6 @@ ui <- navbarPage(
            )
   )
 )
-
-
 
 # Define Server
 server <- function(input, output, session) {
