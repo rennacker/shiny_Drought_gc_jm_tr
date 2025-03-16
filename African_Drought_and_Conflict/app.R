@@ -294,15 +294,8 @@ ui <- navbarPage(
                # Add a text section below the controls
                tags$div(
                  style = "margin-top: 15px;",
-                 tags$h4("About This Analysis"),
-                 tags$p("This application examines the relationship between drought conditions, measured by the Standardized Precipitation Evapotranspiration Index (SPEI), and conflict events in Sahel countries."),
-                 tags$p("SPEI timescales represent drought conditions over different time periods:"),
-                 tags$ul(
-                   tags$li("1 Month: Short-term drought conditions"),
-                   tags$li("12 Months: Medium-term drought conditions"),
-                   tags$li("24/48 Months: Long-term drought conditions")
-                 ),
-                 tags$p("The statistical model uses Poisson regression (fepois) to analyze how drought severity correlates with conflict frequency while controlling for population."),
+                 tags$h4("Poisson Regression"),
+                 tags$p("The statistical model uses Poisson regression (fepois) to analyze how SPEI and population may predict coflict frequency."),
                  tags$p("This Analysis uses only SPEI and population data for a set amount of years. The analysis could be bolstered through by including multiple countries at once, adding a variable for year, including multiple SPEI-timeframes at once, and adding any number of other explanatory variables.")
                )
              ),
