@@ -179,6 +179,42 @@ ui <- navbarPage(
            )
   ),
   
+  tabPanel("Climate Trends",
+           sidebarLayout(
+             sidebarPanel(
+               selectInput("country_cc", "Select Country:", 
+                           choices = sort(unique(merged_data_sahel$country)),
+                           selected = "Burkina Faso"),
+               sliderInput("year_climate", "Select Year Range:", min = 1997, max = 2023, value = c(1997, 2023), sep = ""),
+               
+               # Add a divider
+               tags$hr(),
+               
+               # Added example text with the same format as "About This Analysis"
+               tags$div(
+                 style = "margin-top: 15px;",
+                 tags$h4("Climate Trends Analysis"),
+                 tags$p("This tab visualizes climate patterns in the Sahel region using the Standardized Precipitation-Evapotranspiration Index (SPEI)."),
+                 tags$p("The figure on this tab illustrates the trends in drought conditions over different time periods, allowing you to understand the long-term climate variability."),
+                 tags$p("Use the filters to select a specific country and year range to customize the analysis. The SPEI values are shown for various timescales, representing long-term (48-Month SPEI) drought conditions."),
+                 tags$p("This visualization helps to identify periods of drought and their severity, providing insights into general climatic trends in the region.")
+               )
+             ),
+             mainPanel(
+               fluidRow(
+                 column(9, 
+                        div(style = "padding-right: 0px;", # Reduce right padding
+                            plotOutput("climatePlot"))
+                 ),
+                 column(3, 
+                        div(style = "height: 200px; padding-left: 0px;", # Reduce left padding
+                            plotOutput("africaLMap", height = "100%", width = "100%"))
+                 )
+               )
+             )
+           )
+  ), 
+  
   tabPanel("Conflict Trends",
            sidebarLayout(
              sidebarPanel(
@@ -227,41 +263,6 @@ ui <- navbarPage(
            )
   ),
   
-  tabPanel("Climate Trends",
-           sidebarLayout(
-             sidebarPanel(
-               selectInput("country_cc", "Select Country:", 
-                           choices = sort(unique(merged_data_sahel$country)),
-                           selected = "Burkina Faso"),
-               sliderInput("year_climate", "Select Year Range:", min = 1997, max = 2023, value = c(1997, 2023), sep = ""),
-               
-               # Add a divider
-               tags$hr(),
-               
-               # Added example text with the same format as "About This Analysis"
-               tags$div(
-                 style = "margin-top: 15px;",
-                 tags$h4("Climate Trends Analysis"),
-                 tags$p("This tab visualizes climate patterns in the Sahel region using the Standardized Precipitation-Evapotranspiration Index (SPEI)."),
-                 tags$p("The figure on this tab illustrates the trends in drought conditions over different time periods, allowing you to understand the long-term climate variability."),
-                 tags$p("Use the filters to select a specific country and year range to customize the analysis. The SPEI values are shown for various timescales, representing long-term (48-Month SPEI) drought conditions."),
-                 tags$p("This visualization helps to identify periods of drought and their severity, providing insights into general climatic trends in the region.")
-               )
-             ),
-             mainPanel(
-               fluidRow(
-                 column(9, 
-                        div(style = "padding-right: 0px;", # Reduce right padding
-                            plotOutput("climatePlot"))
-                 ),
-                 column(3, 
-                        div(style = "height: 200px; padding-left: 0px;", # Reduce left padding
-                            plotOutput("africaLMap", height = "100%", width = "100%"))
-                 )
-               )
-             )
-           )
-  ), 
   
   tabPanel("Poisson Regression",
            
