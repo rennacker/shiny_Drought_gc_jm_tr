@@ -119,7 +119,7 @@ ui <- navbarPage(
                tags$div(
                  style = "text-align: justify;",
                  p("This dashboard explores the relationship between drought and conflict events in the Sahel region. Worsening environmental conditions have been linked to resource scarcity, food insecurity, and displacement, all of which may contribute to increased conflict and extremist group recruitment."),
-                 p("We analyze historical precipitation, evapotranspiration data, and armed conflict events across the Sahel from 1997 to 2023 (2011 to 2023 for South Sudan), focusing on spatial and temporal relationships. Countries included in this analysis: Burkina Faso, Chad, Mali, Mauritania, Niger, Senegal, Sudan, South Sudan, Eritrea, Nigeria, and Cameroon."),
+                 p("We analyze historical precipitation & evapotranspiration data, population data, and armed conflict events across the Sahel from 1997 to 2023 (2011 to 2023 for South Sudan), focusing on spatial and temporal relationships. Countries included in this analysis: Burkina Faso, Chad, Mali, Mauritania, Niger, Senegal, Sudan, South Sudan, Eritrea, Nigeria, and Cameroon."),
                  p("The dashboard integrates multiple geospatial datasets from Google Earth Engine (GEE) and conflict events from ACLED."),
                  tags$hr(),
                  h4("How to Use This Dashboard"),
@@ -129,6 +129,7 @@ ui <- navbarPage(
                    tags$li("The 'Conflict Map' tab displays conflict events on an interactive map."),
                    tags$li("The 'Conflict Trends' tab examines the relationship between drought and conflict."),
                    tags$li("The 'Climate Trends' tab visualizes climate patterns using the Standardized Precipitation-Evapotranspiration Index (SPEI)."),
+                   tags$li("The statistical model uses Poisson regression (fepois) to analyze how drought severity correlates with conflict frequency while controlling for population."),
                    tags$li("Data used in this dashboard is for demonstration purposes only.")
                  )
                )
@@ -154,18 +155,18 @@ ui <- navbarPage(
                # Add a divider
                tags$hr(),
                
-               # Keeping the existing "About This Analysis" section as it already has the format you like
+               # "About This Analysis" e
                tags$div(
                  style = "margin-top: 15px;",
                  tags$h4("About This Analysis"),
                  tags$p("This application examines the relationship between drought conditions, measured by the Standardized Precipitation Evapotranspiration Index (SPEI), and conflict events in Sahel countries."),
                  tags$p("SPEI timescales represent drought conditions over different time periods:"),
                  tags$ul(
-                   tags$li("1 Month: Short-term drought conditions"),
-                   tags$li("12 Months: Medium-term drought conditions"),
-                   tags$li("24/48 Months: Long-term drought conditions")
+                   tags$li("1-Month: Short-term drought conditions"),
+                   tags$li("12-Months: Medium-term drought conditions"),
+                   tags$li("24/48-Months: Long-term drought conditions")
                  ),
-                 tags$p("The statistical model uses Poisson regression (fepois) to analyze how drought severity correlates with conflict frequency while controlling for population.")
+                 tags$p("The statistical model uses Poisson regression to analyze how drought severity correlates with conflict frequency while controlling for population.")
                )
              ),
              
