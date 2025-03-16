@@ -36,6 +36,9 @@ sahel_pop_with_fill <- read_csv(here("data", "Sahel_Pop_Con_SPEI_Regression_NA.c
 
 sahel_pop_with_fill$country <- str_to_title(sahel_pop_with_fill$country)
 
+sahel_pop_with_fill <- sahel_pop_with_fill %>%
+  mutate(population = population / 100000)
+
 # Define UI
 ui <- navbarPage(
   "Sahelian Conflict & Climate Dashboard",
@@ -686,7 +689,7 @@ server <- function(input, output, session) {
         mutate(term = case_when(
           term == "(Intercept)" ~ "Intercept",
           grepl("spei_", term) ~ paste("SPEI", gsub("spei_|_month", "", term)),
-          term == "population" ~ "Population",
+          term == "population" ~ "Population: per 100,000",
           TRUE ~ term
         ))
       
