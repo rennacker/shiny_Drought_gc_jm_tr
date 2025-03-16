@@ -621,26 +621,7 @@ server <- function(input, output, session) {
     
     return(data)
   })
-  
-  # Calculate and display total population for selected years and country
-  output$total_population <- renderText({
-    data <- reactive_data()
-    
-    if(nrow(data) == 0) {
-      return("Total Population: No data available")
-    }
-    
-    # Get the latest population value for each year (in case there are multiple entries per year)
-    total_pop <- data %>%
-      group_by(year) %>%
-      summarize(yearly_pop = last(population)) %>%
-      summarize(total = sum(yearly_pop)) %>%
-      pull(total)
-    
-    # Format with commas
-    formatted_pop <- format(total_pop, big.mark = ",", scientific = FALSE)
-    return(paste("Population of Analyzed Municipalities:", formatted_pop))
-  })
+
   
   # Reactive expression for the Poisson regression model
   regression_model <- reactive({
