@@ -13,6 +13,7 @@ library(scales)
 library(rnaturalearth)
 
 # Load conflict datasets
+
 merged_data_sahel <- st_read(here("data", "merged_data_sahel.gpkg"))
 acled_raw <- read_csv(here("data","ACLED_Africa_Regions.csv"))
 acled = acled_raw |>
