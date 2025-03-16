@@ -3,14 +3,20 @@ library(here)
 library(tidyverse)
 library(readxl)
 library(lubridate)
-library(DT)
+library(DT) # for interactive tables
 library(leaflet)
 library(bslib)
 library(leaflet.extras)
 library(janitor)
-library(sf)
+library(sf)# for spatial data handling
 library(scales)
 library(rnaturalearth)
+library(fixest)  # for fixed effects Poisson regression
+library(ggplot2)  # for creating plots
+library(viridis)  # for viridis color palette
+library(broom)  # for tidy model output
+library(gt)  # for nice tables
+
 
 # Load conflict datasets
 
@@ -24,6 +30,11 @@ acled = acled_raw |>
 
 # Get Africa country boundaries for the small map
 africa_countries <- ne_countries(scale = "medium", continent = "Africa", returnclass = "sf")
+
+# Load the dataset
+sahel_pop_with_fill <- read_csv(here("data", "Sahel_Pop_Con_SPEI_Regression_NA.csv"))
+
+sahel_pop_with_fill$country <- str_to_title(sahel_pop_with_fill$country)
 
 # Define UI
 ui <- navbarPage(
@@ -101,8 +112,7 @@ ui <- navbarPage(
                    a("https://doi.org/10.1371/journal.pone.0231866", href = "https://doi.org/10.1371/journal.pone.0231866", target = "_blank"),
                    ".", style = "word-wrap: break-word; white-space: normal;"
                  )
-               ),
-               br()
+               )
              ),
              mainPanel(
                h3("Welcome to the Sahelian Conflict & Drought Dashboard"),
@@ -124,8 +134,7 @@ ui <- navbarPage(
                )
              )
            )
-  )
-  ,
+  ),
   tabPanel("Conflict Map",
            sidebarLayout(
              sidebarPanel(
@@ -136,12 +145,30 @@ ui <- navbarPage(
                selectInput("event_type", "Select Event Types:", choices = unique(acled$event_type),
                            multiple = TRUE,
                            selected = c("Battles", "Riots", "Protests", "Violence against civilians", "Explosions/Remote violence", "Strategic developments")),
-               sliderInput("year", "Select Year Range:", min = 1997, max = 2023, value = c(1997, 2023), sep = ""),
+               sliderInput("year_conflict", "Select Year Range:", min = 1997, max = 2023, value = c(1997, 2023), sep = ""),
                # Slider for selecting range of fatalities
                sliderInput("fatalities", "Select Fatality Range:",
                            min = 0, max = 5000, 
-                           value = c(0, 5000), step = 10)
+                           value = c(0, 5000), step = 10),
+               
+               # Add a divider
+               tags$hr(),
+               
+               # Keeping the existing "About This Analysis" section as it already has the format you like
+               tags$div(
+                 style = "margin-top: 15px;",
+                 tags$h4("About This Analysis"),
+                 tags$p("This application examines the relationship between drought conditions, measured by the Standardized Precipitation Evapotranspiration Index (SPEI), and conflict events in Sahel countries."),
+                 tags$p("SPEI timescales represent drought conditions over different time periods:"),
+                 tags$ul(
+                   tags$li("1 Month: Short-term drought conditions"),
+                   tags$li("12 Months: Medium-term drought conditions"),
+                   tags$li("24/48 Months: Long-term drought conditions")
+                 ),
+                 tags$p("The statistical model uses Poisson regression (fepois) to analyze how drought severity correlates with conflict frequency while controlling for population.")
+               )
              ),
+             
              mainPanel(
                leafletOutput("conflictMap")
              )
@@ -159,7 +186,24 @@ ui <- navbarPage(
                                   selected = c("Moderately Dry", "Very Dry", "Extremely Dry")),
                selectInput("time_lag", "4 Year Drought Lag:", 
                            choices = c("TRUE", "FALSE"),
-                           selected = "TRUE")
+                           selected = "TRUE"),
+               
+               # Add a divider
+               tags$hr(),
+               
+               # Added example text with the same format as "About This Analysis"
+               tags$div(
+                 style = "margin-top: 15px;",
+                 tags$h4("EXAMPLE TEXT"),
+                 tags$p("This application examines the relationship between drought conditions, measured by the Standardized Precipitation Evapotranspiration Index (SPEI), and conflict events in Sahel countries."),
+                 tags$p("SPEI timescales represent drought conditions over different time periods:"),
+                 tags$ul(
+                   tags$li("1 Month: Short-term drought conditions"),
+                   tags$li("12 Months: Medium-term drought conditions"),
+                   tags$li("24/48 Months: Long-term drought conditions")
+                 ),
+                 tags$p("The statistical model uses Poisson regression (fepois) to analyze how drought severity correlates with conflict frequency while controlling for population.")
+               )
              ),
              mainPanel(
                fluidRow(
@@ -170,11 +214,11 @@ ui <- navbarPage(
                  column(3, 
                         div(style = "height: 200px; padding-left: 0px;", # Reduce left padding
                             plotOutput("africaLocationMap", height = "100%", width = "100%"))
-                )
-              )
-            )
+                 )
+               )
+             )
            )
-         ),
+  ),
   
   tabPanel("Climate Trends",
            sidebarLayout(
@@ -182,7 +226,24 @@ ui <- navbarPage(
                selectInput("country_cc", "Select Country:", 
                            choices = sort(unique(merged_data_sahel$country)),
                            selected = "Burkina Faso"),
-               sliderInput("year", "Select Year Range:", min = 1980, max = 2023, value = c(1980, 2023), sep = "")
+               sliderInput("year_climate", "Select Year Range:", min = 1980, max = 2023, value = c(1980, 2023), sep = ""),
+               
+               # Add a divider
+               tags$hr(),
+               
+               # Added example text with the same format as "About This Analysis"
+               tags$div(
+                 style = "margin-top: 15px;",
+                 tags$h4("EXAMPLE TEXT"),
+                 tags$p("This application examines the relationship between drought conditions, measured by the Standardized Precipitation Evapotranspiration Index (SPEI), and conflict events in Sahel countries."),
+                 tags$p("SPEI timescales represent drought conditions over different time periods:"),
+                 tags$ul(
+                   tags$li("1 Month: Short-term drought conditions"),
+                   tags$li("12 Months: Medium-term drought conditions"),
+                   tags$li("24/48 Months: Long-term drought conditions")
+                 ),
+                 tags$p("The statistical model uses Poisson regression (fepois) to analyze how drought severity correlates with conflict frequency while controlling for population.")
+               )
              ),
              mainPanel(
                fluidRow(
@@ -197,18 +258,91 @@ ui <- navbarPage(
                )
              )
            )
+  ), 
+  
+  tabPanel("Poisson Regression",
+           
+           sidebarLayout(
+             sidebarPanel(
+               # Text output to display total population at the top
+               tags$div(
+                 style = "margin-bottom: 15px; font-weight: bold; padding-top: 5px;",
+                 textOutput("total_population")
+               ),
+               
+               # Option to select the country
+               selectInput("country_r", "Select Country:",
+                           choices = unique(sahel_pop_with_fill$country),
+                           selected = unique(sahel_pop_with_fill$country)[1]),
+               
+               # Select the year range
+               sliderInput("year_range", "Select Year Range:",
+                           min = 2000,
+                           max = 2020,
+                           value = c(2000, 2020), 
+                           step = 1,
+                           sep = ""),
+               
+               # Select the spei variable - only numeric month options
+               selectInput("spei_var", "Select SPEI Variable:",
+                           choices = c("1 Month" = "spei_01_month", 
+                                       "12 Months" = "spei_12_month", 
+                                       "24 Months" = "spei_24_month", 
+                                       "48 Months" = "spei_48_month"), 
+                           selected = "spei_01_month"),
+               
+               # Add a divider
+               tags$hr(),
+               
+               # Add a text section below the controls
+               tags$div(
+                 style = "margin-top: 15px;",
+                 tags$h4("About This Analysis"),
+                 tags$p("This application examines the relationship between drought conditions, measured by the Standardized Precipitation Evapotranspiration Index (SPEI), and conflict events in Sahel countries."),
+                 tags$p("SPEI timescales represent drought conditions over different time periods:"),
+                 tags$ul(
+                   tags$li("1 Month: Short-term drought conditions"),
+                   tags$li("12 Months: Medium-term drought conditions"),
+                   tags$li("24/48 Months: Long-term drought conditions")
+                 ),
+                 tags$p("The statistical model uses Poisson regression (fepois) to analyze how drought severity correlates with conflict frequency while controlling for population.")
+               )
+             ),
+             
+             mainPanel(
+               # Top row with model results and Africa map
+               fluidRow(
+                 column(8, h6("Bold p-values are significant at p < 0.05"),
+                        div(style = "padding-right: 0px;", # Reduce right padding
+                            gt_output("model_table")
+                        )
+                 ),
+                 # Right column for Africa map
+                 column(4,
+                        h4(NULL),
+                        div(style = "height: 200px; padding-left: 0px;", # Reduce left padding
+                            plotOutput("africa_map", height = "100%", width = "100%")
+                        )
+                 )
+               ),
+               
+               # Plot to show the relationship between conflict and SPEI
+               h4(NULL),
+               plotOutput("regression_plot", height = "400px")
+             )
+           )
   )
 )
 
-
+#################git config --global --unset http.proxy######################## This was used to fix a fatal error at some point, Removed by Travis. 
 
 # Define Server
 server <- function(input, output, session) {
   filtered_data <- reactive({
     req(input$country_map)
     acled %>%
-      filter(year(event_date) >= input$year[1],
-             year(event_date) <= input$year[2],
+      filter(year(event_date) >= input$year_conflict[1],
+             year(event_date) <= input$year_conflict[2],
              fatalities >= input$fatalities[1], fatalities <= input$fatalities[2],
              country %in% input$country_map,  # Allow multiple country selection
              event_type %in% input$event_type)
@@ -296,7 +430,7 @@ server <- function(input, output, session) {
   
   output$climatePlot <- renderPlot({
     spei_values <- merged_data_sahel |> 
-      filter(country == input$country_cc, year >= input$year[1], year <= input$year[2]) |>
+      filter(country == input$country_cc, year >= input$year_climate[1], year <= input$year_climate[2]) |>
       group_by(year) |>
       summarise(avg_annual_spei = mean(spei_48_month)) |>
       ungroup()
@@ -467,6 +601,213 @@ server <- function(input, output, session) {
            y = "Number of Conflicts",
            fill = "SPEI Category") +
       theme_minimal()
+  }) 
+  
+  # Reactive expression for filtered data based on selected year range and country
+  reactive_data <- reactive({
+    data <- sahel_pop_with_fill %>%
+      filter(year >= input$year_range[1] & year <= input$year_range[2]) %>%
+      filter(country == input$country_r) %>%
+      # Select columns
+      select(year, country, conflict_events, population, all_of(input$spei_var)) %>%
+      drop_na()  # Remove NA rows for the selected columns
+    
+    return(data)
+  })
+  
+  # Calculate and display total population for selected years and country
+  output$total_population <- renderText({
+    data <- reactive_data()
+    
+    if(nrow(data) == 0) {
+      return("Total Population: No data available")
+    }
+    
+    # Get the latest population value for each year (in case there are multiple entries per year)
+    total_pop <- data %>%
+      group_by(year) %>%
+      summarize(yearly_pop = last(population)) %>%
+      summarize(total = sum(yearly_pop)) %>%
+      pull(total)
+    
+    # Format with commas
+    formatted_pop <- format(total_pop, big.mark = ",", scientific = FALSE)
+    return(paste("Total Population:", formatted_pop))
+  })
+  
+  # Reactive expression for the Poisson regression model
+  regression_model <- reactive({
+    data <- reactive_data()
+    
+    # Check if we have enough data for regression
+    if(nrow(data) < 3) {
+      return(NULL)
+    }
+    
+    spei_var_name <- input$spei_var
+    
+    # Create the formula object based on the selected SPEI variable
+    formula_obj <- as.formula(paste("conflict_events ~", spei_var_name, "+ population"))
+    
+    # Perform the Poisson regression using the fepois function
+    tryCatch({
+      model <- fepois(formula_obj, data = data)
+      return(model)
+    }, error = function(e) {
+      return(NULL)
+    })
+  })
+  
+  # Calculate pseudo R²
+  pseudo_r_squared <- reactive({
+    model <- regression_model()
+    
+    if(is.null(model)) {
+      return(NA)
+    }
+    
+    # Get fitted values
+    fitted_values <- fitted(model)
+    
+    # Get observed values
+    observed <- reactive_data()$conflict_events
+    
+    # Calculate null model (intercept only) prediction (mean of observed)
+    null_pred <- rep(mean(observed), length(observed))
+    
+    # Calculate deviances
+    null_deviance <- sum((observed - null_pred)^2)
+    residual_deviance <- sum((observed - fitted_values)^2)
+    
+    # Calculate McFadden's pseudo R²
+    r_squared <- 1 - (residual_deviance / null_deviance)
+    
+    return(r_squared)
+  })
+  
+  # Output the model as a clean gt table using broom's tidy function
+  output$model_table <- render_gt({
+    model <- regression_model()
+    r_squared <- pseudo_r_squared()
+    
+    # If model is NULL, return a simple message dataframe
+    if(is.null(model)) {
+      data.frame(
+        term = "Insufficient data or model error",
+        estimate = NA,
+        p.value = NA
+      ) %>%
+        gt() %>%
+        tab_header(title = "Model Results")
+    } else {
+      # Use broom's tidy function to get clean coefficient table
+      tidy_model <- tidy(model, conf.int = TRUE)
+      
+      # Format term names for better readability
+      tidy_model <- tidy_model %>%
+        mutate(term = case_when(
+          term == "(Intercept)" ~ "Intercept",
+          grepl("spei_", term) ~ paste("SPEI", gsub("spei_|_month", "", term)),
+          term == "population" ~ "Population",
+          TRUE ~ term
+        ))
+      
+      # Create gt table
+      tbl <- tidy_model %>%
+        select(term, estimate, std.error, p.value) %>%
+        gt() %>%
+        tab_header(title = "Regression Results") %>%
+        fmt_number(
+          columns = c(estimate, std.error, p.value),
+          decimals = 4
+        ) %>%
+        cols_label(
+          term = "Term",
+          estimate = "Estimate",
+          std.error = "Std. Error",
+          p.value = "p-value"
+        ) %>%
+        tab_style(
+          style = cell_text(weight = "bold"),
+          locations = cells_body(
+            columns = p.value,
+            rows = p.value < 0.05
+          )
+        ) 
+      
+      # Add pseudo R² as a source note
+      if(!is.na(r_squared)) {
+        tbl <- tbl %>%
+          tab_source_note(
+            source_note = md(paste0("Pseudo R² :   ", round(r_squared, 4)))
+          )
+      }
+      
+      return(tbl)
+    }
+  })
+  
+  # Output the Africa map with selected country highlighted
+  output$africa_map <- renderPlot({
+    req(input$country_r)
+    
+    # Create a small map of Africa with the selected country highlighted
+    africa_map <- ggplot() +
+      geom_sf(data = africa_countries, fill = "lightgray", color = "white", size = 0.2) +
+      geom_sf(data = africa_countries %>% 
+                filter(name == input$country_r | 
+                         # Handle potential name discrepancies between datasets
+                         tolower(name) == tolower(input$country_r) |
+                         admin == input$country_r),
+              fill = "black", color = "white") +
+      # Make plot more compact by setting aspect ratio and expanding limits
+      coord_sf(expand = FALSE) +
+      theme_void() +  # Minimal theme with no axes, labels, or grid
+      theme(
+        panel.background = element_rect(fill = "#f4f4f4", color = NA),
+        plot.background = element_rect(fill = "#f4f4f4", color = NA),
+        plot.margin = margin(0, 0, 0, 0)  # Remove all margins
+      )
+    
+    return(africa_map)
+  }, bg = "#f4f4f4")
+  
+  # Output the regression plot with SPEI on x-axis and viridis colors
+  output$regression_plot <- renderPlot({
+    data <- reactive_data()
+    
+    if(nrow(data) < 2) {
+      return(ggplot() + 
+               annotate("text", x = 0.5, y = 0.5, label = "Insufficient data to display plot") +
+               theme_void())
+    }
+    
+    # Access SPEI variable by name
+    spei_var_name <- input$spei_var
+    
+    # Create year column as factor for proper ordering
+    data$year_factor <- as.factor(data$year)
+    
+    # Create a plot showing conflict events vs SPEI with viridis color palette
+    ggplot(data, aes_string(x = spei_var_name, y = "conflict_events")) +
+      geom_point(aes(color = year_factor), size = 3, alpha = 0.8) +
+      geom_smooth(method = "glm", method.args = list(family = "poisson"), 
+                  color = "black", se = TRUE) +
+      scale_color_viridis_d(option = "viridis") +  # Viridis discrete color scale
+      labs(
+        title = paste("Conflict Events vs SPEI in", input$country_r),
+        subtitle = paste("SPEI", gsub("spei_|_month", "", input$spei_var), "Month"),
+        x = "SPEI Value",
+        y = "Conflict Events",
+        color = "Year"
+      ) +
+      scale_y_continuous(labels = scales::comma) +
+      theme_minimal() +
+      theme(
+        legend.position = "right",
+        plot.title = element_text(size = 14, face = "bold"),
+        axis.title = element_text(size = 12)
+      )
   })
   
 }

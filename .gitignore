@@ -28,6 +28,8 @@ data/GTD_2021Jan-June_1222dist.xlsx
 data/District_Geometries_Africa.csv
 data/Annual_SPEI_Africa_1980_2025.csv
 data/ACLED_Africa_Regions.csv
+data/Sahel_Pop_Con_SPEI_Regression.csv
+data/Sahel_Pop_Con_SPEI_Regression_NA.csv
 
 *.csv
 
