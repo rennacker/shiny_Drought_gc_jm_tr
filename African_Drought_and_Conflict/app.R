@@ -129,7 +129,7 @@ ui <- navbarPage(
                    tags$li("The 'Conflict Map' tab displays conflict events on an interactive map."),
                    tags$li("The 'Conflict Trends' tab examines the relationship between drought and conflict."),
                    tags$li("The 'Climate Trends' tab visualizes climate patterns using the Standardized Precipitation-Evapotranspiration Index (SPEI)."),
-                   tags$li("The statistical model uses Poisson regression (fepois) to analyze how drought severity correlates with conflict frequency while controlling for population."),
+                   tags$li("The 'Poisson Regression' tab performs a Poisson regression to analyze how drought severity correlates with conflict frequency while controlling for population."),
                    tags$li("Data used in this dashboard is for demonstration purposes only.")
                  )
                )
@@ -189,31 +189,34 @@ ui <- navbarPage(
                            choices = c("TRUE", "FALSE"),
                            selected = "TRUE"),
                
-               # Add a divider
+               # Divider for visual clarity
                tags$hr(),
                
-               # Added example text with the same format as "About This Analysis"
+               # Informative text about the visualization
                tags$div(
                  style = "margin-top: 15px;",
-                 tags$h4("EXAMPLE TEXT"),
-                 tags$p("This application examines the relationship between drought conditions, measured by the Standardized Precipitation Evapotranspiration Index (SPEI), and conflict events in Sahel countries."),
-                 tags$p("SPEI timescales represent drought conditions over different time periods:"),
+                 tags$h4("Conflict Trends Analysis"),
+                 tags$p("This tab visualizes the temporal relationship between drought conditions 
+                and conflict events in your selected country. The timeline displays:"),
                  tags$ul(
-                   tags$li("1 Month: Short-term drought conditions"),
-                   tags$li("12 Months: Medium-term drought conditions"),
-                   tags$li("24/48 Months: Long-term drought conditions")
+                   tags$li("Conflict events (black line) across available years"),
+                   tags$li("Colored overlays indicating drought periods based on your selected SPEI thresholds"),
+                   tags$li("Optional 4-year lag to show delayed drought effects on conflict")
                  ),
-                 tags$p("The statistical model uses Poisson regression (fepois) to analyze how drought severity correlates with conflict frequency while controlling for population.")
+                 tags$p("Different drought severities are color-coded from orange (moderately dry) 
+                to dark red (extremely dry). This visualization helps identify potential 
+                connections between drought periods and subsequent increases in conflict activity.")
                )
              ),
+             
              mainPanel(
                fluidRow(
-                 column(9, 
-                        div(style = "padding-right: 0px;", # Reduce right padding
+                 column(8,  # Improved column width balance
+                        div(style = "padding-right: 10px;", 
                             plotOutput("conflictTrendPlot"))
                  ),
-                 column(3, 
-                        div(style = "height: 200px; padding-left: 0px;", # Reduce left padding
+                 column(4, 
+                        div(style = "height: 200px; padding-left: 10px;", 
                             plotOutput("africaLocationMap", height = "100%", width = "100%"))
                  )
                )
@@ -227,7 +230,7 @@ ui <- navbarPage(
                selectInput("country_cc", "Select Country:", 
                            choices = sort(unique(merged_data_sahel$country)),
                            selected = "Burkina Faso"),
-               sliderInput("year_climate", "Select Year Range:", min = 1980, max = 2023, value = c(1980, 2023), sep = ""),
+               sliderInput("year_climate", "Select Year Range:", min = 1997, max = 2023, value = c(1997, 2023), sep = ""),
                
                # Add a divider
                tags$hr(),
@@ -633,7 +636,7 @@ server <- function(input, output, session) {
     
     # Format with commas
     formatted_pop <- format(total_pop, big.mark = ",", scientific = FALSE)
-    return(paste("Total Population:", formatted_pop))
+    return(paste("Population of Analyzed Municipalities:", formatted_pop))
   })
   
   # Reactive expression for the Poisson regression model
