@@ -63,3 +63,18 @@ ggplot(mazowe_join, aes(x = year, y = number_conflicts)) +
   theme_minimal()
 
 
+# Load the dataset
+sahel_pop_with_fill <- read_csv(here("data", "Sahel_Pop_Con_SPEI_Regression_NA.csv"))
+
+nigeria <- sahel_pop_with_fill %>%
+  group_by(country, year) %>%
+  filter(country == "nigeria", year == 2020)
+
+nigeria_population_sum <- sahel_pop_with_fill %>%
+  filter(country == "nigeria") %>%
+  summarise(total_population = sum(population, na.rm = TRUE))
+
+country_year_population <- sahel_pop_with_fill %>%
+  group_by(country, year) %>%
+  summarise(total_population = sum(population, na.rm = TRUE), .groups = "drop")
+
