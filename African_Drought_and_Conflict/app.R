@@ -111,6 +111,11 @@ ui <- navbarPage(
                    "Runfola, D. et al. (2020). geoBoundaries: A global database of political administrative boundaries. PLoS ONE 15(4): e0231866. ",
                    a("https://doi.org/10.1371/journal.pone.0231866", href = "https://doi.org/10.1371/journal.pone.0231866", target = "_blank"),
                    ".", style = "word-wrap: break-word; white-space: normal;"
+                 ),
+                 tags$li(
+                   "WorldPop. (2025). Open spatial demographic data and research. University of Southampton. ",
+                   a("https://www.worldpop.org/", href = "https://www.worldpop.org/", target = "_blank"),
+                   ".", style = "word-wrap: break-word; white-space: normal;"
                  )
                )
              ),
@@ -155,23 +160,21 @@ ui <- navbarPage(
                # Add a divider
                tags$hr(),
                
-               # "About This Analysis" e
+               # "About This Analysis" 
                tags$div(
                  style = "margin-top: 15px;",
-                 tags$h4("About This Analysis"),
-                 tags$p("This application examines the relationship between drought conditions, measured by the Standardized Precipitation Evapotranspiration Index (SPEI), and conflict events in Sahel countries."),
-                 tags$p("SPEI timescales represent drought conditions over different time periods:"),
-                 tags$ul(
-                   tags$li("1-Month: Short-term drought conditions"),
-                   tags$li("12-Months: Medium-term drought conditions"),
-                   tags$li("24/48-Months: Long-term drought conditions")
-                 ),
-                 tags$p("The statistical model uses Poisson regression to analyze how drought severity correlates with conflict frequency while controlling for population.")
+                 tags$h4("Conflict Map"),
+                 tags$p("The Conflict Map tab displays an interactive map showing conflict events across the Sahel region. Use the filters to select countries, event types, and year range, and adjust the fatality range to visualize the spatial distribution of conflicts. The map allows for detailed exploration of conflict events and their locations.")
                )
              ),
              
              mainPanel(
-               leafletOutput("conflictMap")
+               # Adjust the layout to make the map take up more space
+               fluidRow(
+                 column(12, 
+                        leafletOutput("conflictMap", height = "800px")  # Increase the height of the map
+                 )
+               )
              )
            )
   ),
@@ -268,12 +271,6 @@ ui <- navbarPage(
            
            sidebarLayout(
              sidebarPanel(
-               # Text output to display total population at the top
-               tags$div(
-                 style = "margin-bottom: 15px; font-weight: bold; padding-top: 5px;",
-                 textOutput("total_population")
-               ),
-               
                # Option to select the country
                selectInput("country_r", "Select Country:",
                            choices = unique(sahel_pop_with_fill$country),
@@ -315,6 +312,11 @@ ui <- navbarPage(
              ),
              
              mainPanel(
+               # Move the total population display here
+               tags$div(
+                 style = "margin-bottom: 15px; font-weight: bold; padding-top: 5px;",
+                 textOutput("total_population")
+               ),
                # Top row with model results and Africa map
                fluidRow(
                  column(8, h6("Bold p-values are significant at p < 0.05"),
