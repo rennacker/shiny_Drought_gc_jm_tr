@@ -303,7 +303,7 @@ ui <- navbarPage(
                    tags$li("24/48 Months: Long-term drought conditions")
                  ),
                  tags$p("The statistical model uses Poisson regression (fepois) to analyze how drought severity correlates with conflict frequency while controlling for population."),
-                 tags$p("This Analysis uses only SPEI and population data for a set amount of years. The analysis could be bolsterd through including a comparison between countries, year as factor, and the addition of SPEI timescale.")
+                 tags$p("This Analysis uses only SPEI and population data for a set amount of years. The analysis could be bolstered through by including multiple countries at once, adding a variable for year, including multiple SPEI-timeframes at once, and adding any number of other explanatory variables.")
                )
              ),
              
