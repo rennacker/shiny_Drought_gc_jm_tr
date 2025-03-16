@@ -241,15 +241,11 @@ ui <- navbarPage(
                # Added example text with the same format as "About This Analysis"
                tags$div(
                  style = "margin-top: 15px;",
-                 tags$h4("EXAMPLE TEXT"),
-                 tags$p("This application examines the relationship between drought conditions, measured by the Standardized Precipitation Evapotranspiration Index (SPEI), and conflict events in Sahel countries."),
-                 tags$p("SPEI timescales represent drought conditions over different time periods:"),
-                 tags$ul(
-                   tags$li("1 Month: Short-term drought conditions"),
-                   tags$li("12 Months: Medium-term drought conditions"),
-                   tags$li("24/48 Months: Long-term drought conditions")
-                 ),
-                 tags$p("The statistical model uses Poisson regression (fepois) to analyze how drought severity correlates with conflict frequency while controlling for population.")
+                 tags$h4("Climate Trends Analysis"),
+                 tags$p("This tab visualizes climate patterns in the Sahel region using the Standardized Precipitation-Evapotranspiration Index (SPEI)."),
+                 tags$p("The figure on this tab illustrates the trends in drought conditions over different time periods, allowing you to understand the long-term climate variability."),
+                 tags$p("Use the filters to select a specific country and year range to customize the analysis. The SPEI values are shown for various timescales, representing long-term (48-Month SPEI) drought conditions."),
+                 tags$p("This visualization helps to identify periods of drought and their severity, providing insights into general climatic trends in the region.")
                )
              ),
              mainPanel(
