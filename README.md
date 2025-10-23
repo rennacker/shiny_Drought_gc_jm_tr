@@ -17,7 +17,6 @@ This project provides an interactive platform to analyze patterns of armed confl
 ## Data Sources
 
 - **ACLED (Armed Conflict Location & Event Data Project)**: Comprehensive conflict event data including battles, protests, riots, and violence against civilians
-- **GTD (Global Terrorism Database)**: Supplementary terrorism incident data
 - **SPEI**: Standardized Precipitation-Evapotranspiration Index for drought monitoring
 - **FAO GAUL**: Global Administrative Unit Layers for geographic boundaries
 
@@ -99,12 +98,9 @@ shiny_Drought_gc_jm_tr/
 
 The following data files are managed via Git LFS:
 - `ACLED_Africa_Regions_1-1-1900--1-30-2025.csv` (236 MB)
-- `GTD_0522dist.xlsx`
-- `GTD_2021Jan-June_1222dist.xlsx`
 
 Documentation files:
 - `ACLED_Codebook-2024-7-Oct.-2024.pdf`
-- `GTD_Codebook.pdf`
 
 ## Development
 
@@ -123,17 +119,13 @@ If using this application or code, please cite the original data sources:
 **ACLED:**
 > Raleigh, C., Linke, A., Hegre, H., & Karlsen, J. (2010). Introducing ACLED: An Armed Conflict Location and Event Dataset. Journal of Peace Research, 47(5), 651-660.
 
-**Global Terrorism Database:**
-> National Consortium for the Study of Terrorism and Responses to Terrorism (START). (2022). Global Terrorism Database. Retrieved from https://www.start.umd.edu/gtd
-
 ## License
 
-Please refer to the original data source licenses for ACLED and GTD datasets.
+Please refer to the original data source licenses for ACLED dataset.
 
 ## Acknowledgments
 
 - ACLED Project for conflict event data
-- START (National Consortium for the Study of Terrorism and Responses to Terrorism) for GTD data
 - ESM 244 course instructors and teaching staff
 
 ## Contact
