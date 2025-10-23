@@ -1,6 +1,6 @@
-# Drought and Armed Conflict in Sub-Saharan Africa
+# Drought and Conflict in Sub-Saharan Africa
 
-An interactive Shiny web application for exploring the relationship between drought conditions and armed conflict events across Sub-Saharan Africa.
+An interactive Shiny web application for exploring the relationship between drought conditions and conflict events across the Sahel region of Sub-Saharan Africa.
 
 ## Overview
 
@@ -20,6 +20,7 @@ This project provides an interactive platform to analyze patterns of armed confl
 - **SPEIbase**: Standardized Precipitation-Evapotranspiration Index for drought monitoring
 - **geoBoundaries**: Global database of political administrative boundaries
 - **WorldPop**: Open spatial demographic data and research
+
 
 ## Installation
 
@@ -127,7 +128,7 @@ This project was developed as part of ESM 244 (Environmental Science & Managemen
 ### Contributors
 
 - Garrett Craig (gc)
-- Jennifer Meng (jm)
+- Jackson Mills (jm)
 - Taylor Rennacker (tr)
 
 ## Citation
