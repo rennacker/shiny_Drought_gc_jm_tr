@@ -27,7 +27,6 @@ This project provides an interactive platform to analyze patterns of armed confl
 
 - R (version 4.0 or higher recommended)
 - RStudio (optional but recommended)
-- Git LFS for large data files
 
 ### Required R Packages
 
@@ -48,15 +47,29 @@ install.packages(c(
 ### Clone the Repository
 
 ```bash
-# Install Git LFS if you haven't already
-git lfs install
-
 # Clone the repository
 git clone https://github.com/rennacker/shiny_Drought_gc_jm_tr.git
 cd shiny_Drought_gc_jm_tr
 ```
 
-Note: This repository uses Git LFS for large data files. Ensure Git LFS is installed before cloning.
+### Download Data Files
+
+Due to the large size of the data files (236+ MB), they are hosted separately on Google Drive.
+
+**Download the data folder here:** [Google Drive - Data Folder](https://drive.google.com/drive/folders/12IeRMvvZwmva499pvuE_AJxZU3DwddFc?usp=sharing)
+
+After downloading:
+1. Extract the `data/` folder
+2. Place it in the root directory of the cloned repository
+3. Your structure should look like:
+   ```
+   shiny_Drought_gc_jm_tr/
+   ├── app.R
+   ├── data/           # <- Downloaded data folder goes here
+   │   ├── ACLED_Africa_Regions_1-1-1900--1-30-2025.csv
+   │   └── ...
+   └── ...
+   ```
 
 ## Usage
 
@@ -97,14 +110,15 @@ shiny_Drought_gc_jm_tr/
 
 ## Data Files
 
-The following data files are managed via Git LFS:
-- `ACLED_Africa_Regions_1-1-1900--1-30-2025.csv` (236 MB)
-- `GTD_0522dist.xlsx`
-- `GTD_2021Jan-June_1222dist.xlsx`
+**Data files are available for download via Google Drive:** [Download Data Folder](https://drive.google.com/drive/folders/12IeRMvvZwmva499pvuE_AJxZU3DwddFc?usp=sharing)
 
-Documentation files:
-- `ACLED_Codebook-2024-7-Oct.-2024.pdf`
-- `GTD_Codebook.pdf`
+The data folder includes:
+- `ACLED_Africa_Regions_1-1-1900--1-30-2025.csv` (236 MB) - Conflict event data
+- `Annual_SPEI_Africa_1980_2025.csv` - Climate drought indicators
+- `district_geometries_africa.csv` - Geographic boundary data
+- `ACLED_Codebook-2024-7-Oct.-2024.pdf` - Documentation
+
+Note: The data folder must be downloaded separately and placed in the project root directory before running the application.
 
 ## Development
 
@@ -120,20 +134,24 @@ This project was developed as part of ESM 244 (Environmental Science & Managemen
 
 If using this application or code, please cite the original data sources:
 
-**ACLED:**
-> Raleigh, C., Linke, A., Hegre, H., & Karlsen, J. (2010). Introducing ACLED: An Armed Conflict Location and Event Dataset. Journal of Peace Research, 47(5), 651-660.
+Armed Conflict Location & Event Data Project (ACLED). 2024. ACLED Version 2024 Dataset. Retrieved from https://acleddata.com.
 
-**Global Terrorism Database:**
-> National Consortium for the Study of Terrorism and Responses to Terrorism (START). (2022). Global Terrorism Database. Retrieved from https://www.start.umd.edu/gtd
+Beguería, S., Vicente Serrano, S. M., Reig-Gracia, F., Latorre Garcés, B. (2023). SPEIbase v.2.9 [Dataset]. DIGITAL.CSIC. doi:10.20350/digitalCSIC/15470.
+
+Runfola, D. et al. (2020). geoBoundaries: A global database of political administrative boundaries. PLoS ONE 15(4): e0231866. https://doi.org/10.1371/journal.pone.0231866.
+
+WorldPop. (2025). Open spatial demographic data and research. University of Southampton. https://www.worldpop.org/.
 
 ## License
 
-Please refer to the original data source licenses for ACLED and GTD datasets.
+Please refer to the original data source licenses for ACLED, SPEIbase, geoBoundaries, and WorldPop datasets.
 
 ## Acknowledgments
 
 - ACLED Project for conflict event data
-- START (National Consortium for the Study of Terrorism and Responses to Terrorism) for GTD data
+- DIGITAL.CSIC for SPEIbase climate data
+- geoBoundaries team for administrative boundary data
+- WorldPop at University of Southampton for demographic data
 - ESM 244 course instructors and teaching staff
 
 ## Contact
