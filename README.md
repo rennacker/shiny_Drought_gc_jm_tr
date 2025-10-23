@@ -1,6 +1,6 @@
-# Drought and Armed Conflict in Sub-Saharan Africa
+# Drought and Conflict in Sub-Saharan Africa
 
-An interactive Shiny web application for exploring the relationship between drought conditions and armed conflict events across Sub-Saharan Africa.
+An interactive Shiny web application for exploring the relationship between drought conditions and conflict events across the Sahel region of Sub-Saharan Africa.
 
 ## Overview
 
