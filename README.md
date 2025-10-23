@@ -113,7 +113,7 @@ This project was developed as part of ESM 244 (Environmental Science & Managemen
 ### Contributors
 
 - Garrett Craig (gc)
-- Jennifer Meng (jm)
+- Jackson Mills (jm)
 - Taylor Rennacker (tr)
 
 ## Citation
