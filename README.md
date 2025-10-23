@@ -17,9 +17,9 @@ This project provides an interactive platform to analyze patterns of armed confl
 ## Data Sources
 
 - **ACLED (Armed Conflict Location & Event Data Project)**: Comprehensive conflict event data including battles, protests, riots, and violence against civilians
-- **GTD (Global Terrorism Database)**: Supplementary terrorism incident data
-- **SPEI**: Standardized Precipitation-Evapotranspiration Index for drought monitoring
-- **FAO GAUL**: Global Administrative Unit Layers for geographic boundaries
+- **SPEIbase**: Standardized Precipitation-Evapotranspiration Index for drought monitoring
+- **geoBoundaries**: Global database of political administrative boundaries
+- **WorldPop**: Open spatial demographic data and research
 
 ## Installation
 
