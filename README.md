@@ -123,7 +123,7 @@ Note: The data folder must be downloaded separately and placed in the project ro
 
 ## Development
 
-This project was developed as part of ESM 244 (Environmental Science & Management) coursework, focusing on the intersection of climate change and conflict dynamics in Africa.
+This project was developed as part of ESM 217 (Planetary Health) and ESM 244 (Advanced Data Analysis) coursework, focusing on the intersection of climate change and conflict dynamics.
 
 ### Contributors
 
@@ -153,7 +153,7 @@ Please refer to the original data source licenses for ACLED, SPEIbase, geoBounda
 - DIGITAL.CSIC for SPEIbase climate data
 - geoBoundaries team for administrative boundary data
 - WorldPop at University of Southampton for demographic data
-- ESM 244 course instructors and teaching staff
+- ESM 217 and ESM 244 course instructors and teaching staff
 
 ## Contact
 
